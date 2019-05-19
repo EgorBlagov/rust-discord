@@ -97,11 +97,15 @@ namespace Oxide.Plugins
 
         private void OnServerInitialized() {
             loaded = true;
-            sendToDiscord(_(config.StartMessage));
+            NextTick(() => {
+                sendToDiscord(_(config.StartMessage));
+            });
         }
 
         private void Unload() {
-            sendToDiscord(_(config.GoodbyeMessage));
+            NextTick(() => {
+                sendToDiscord(_(config.GoodbyeMessage));
+            });
         }
 
         private string _(string input) {
