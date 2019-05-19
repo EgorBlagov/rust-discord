@@ -33,7 +33,7 @@ class Discord {
             await this.client.login(this.botToken);
         } catch (err) {
             console.error("Discord unable to login");
-            setTimeout(this.login, this.reconnectPeriod);
+            setTimeout(() => this.login(), this.reconnectPeriod);
         }
     }
 
