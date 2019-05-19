@@ -7,7 +7,7 @@ Type=simple
 Restart=always
 User=opasnostya
 WorkingDirectory=<abspath>/discord_daemon
-ExecStart=<abspath>/discord_daemon/daemon -t <token> -c <channelname> -i localhost -p <port> -P <password>
+ExecStart=<abspath>/discord_daemon/rust-discord -t <token> -c <channelname> -i localhost -p <port> -P <password>
 
 [Install]
 WantedBy=multi-user.target
