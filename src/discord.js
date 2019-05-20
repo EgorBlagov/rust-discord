@@ -1,12 +1,14 @@
 const discordjs = require('discord.js');
 
 class Discord {
-    constructor(botToken, channelName, manager) {
+    constructor(options, manager) {
         this.channel = null;
-        this.botToken = botToken;
-        this.channelName = channelName;
+        this.botToken = options.token;
+        this.channelName = options.channel;
+        this.sendRetries = options['retry-count'];
+        this.sendRetryPeriod = options['send-period'];
+        this.reconnectPeriod  = options['reconnect-period'];
         this.manager = manager;
-        this.reconnectPeriod = 15000;
         this.initClient();
     }
 
@@ -66,11 +68,26 @@ class Discord {
         this.manager.onDiscordMessage(msg.author.username, msg.content, roles);
     }
 
-    send(message) {
+    async send(message) {
         if (this.channel != undefined) {
-            this.channel.send(message);
+            let retriesLeft = this.sendRetries;
+            while(retriesLeft > 0) {
+                try {
+                    retriesLeft--;
+                    await this.channel.send(message);
+                    break;
+                } catch (error) {
+                    if (retriesLeft === 0) {
+                        console.error(`Unable to send: ${message}, skipping`);
+                    } else {
+                        console.warn(`Unable to send: ${message}, retries left: ${retriesLeft}, retrying in ${this.sendRetryPeriod/1000}`);
+                        await new Promise(resolve => setTimeout(resolve, this.sendRetryPeriod));
+                    }
+                }
+            }
         }
     }
+
     get guild() {
         return this.channel.guild
     }    

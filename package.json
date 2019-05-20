@@ -5,9 +5,9 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node index.js",
-    "dev": "nodemon index.js",
-	"build": "pkg -t linux -o rust-discord index.js"
+    "start": "node src/app.js",
+    "dev": "nodemon src/app.js",
+	"build": "pkg -t linux -o rust-discord src/app.js"
   },
   "author": "Egor Blagov",
   "license": "ISC",

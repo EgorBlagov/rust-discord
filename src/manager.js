@@ -39,8 +39,8 @@ class Message {
 
 class Manager {
     constructor(options) {
-        this.rcon = new Rcon(options.RconIP, options.RconPort, options.RconPassword, this);
-        this.discord = new Discord(options.BotToken, options.ChannelName, this);
+        this.rcon = new Rcon(options, this);
+        this.discord = new Discord(options, this);
     }
 
     onServerMessage(message) {

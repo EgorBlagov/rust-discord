@@ -65,13 +65,13 @@ namespace Oxide.Plugins
         [ConsoleCommand("discordapi.ready")]
         private void EventDiscordReady(ConsoleSystem.Arg arg) {
             ReadyEvent readyEvent = parseArg<ReadyEvent>(arg);
-            Puts($"Connected to server: {readyEvent.server}, channel: {readyEvent.channel}");
+            NextTick(()=>Puts($"Connected to server: {readyEvent.server}, channel: {readyEvent.channel}"));
             adminRole = readyEvent.adminRole;
             sendToDiscord(_(config.WelcomeMessage));
         }
 
         private void sendToDiscord(string message) {
-            Puts($"{DiscordMagicPrefix}{message}");
+            NextTick(()=>Puts($"{DiscordMagicPrefix}{message}"));
         }
 
         [ConsoleCommand("discordapi.message")]
@@ -85,7 +85,7 @@ namespace Oxide.Plugins
 
                 pl.SendConsoleCommand("chat.add", new object[] { config.ChatIconId, messageToChat });
             }
-            Puts($"S<-D: {message.ToConsoleMessage()}");
+            NextTick(()=>Puts($"S<-D: {message.ToConsoleMessage()}"));
         }
 
         private void Init() {

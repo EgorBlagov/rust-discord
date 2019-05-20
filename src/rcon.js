@@ -4,13 +4,13 @@ const magicDiscordPrefix = 'discord.send';
 const discordPrefix = `[DiscordAPI] ${magicDiscordPrefix}`;
 
 class Rcon {
-    constructor(ip, port, password, manager) {
-        this.ip = ip;
-        this.port = port;
-        this.password = password;
-        this.reconnectPeriod = 15000;
+    constructor(options, manager) {
+        this.ip = options.ip;
+        this.port = options.port;
+        this.password = options.password;
+        this.reconnectPeriod = options['reconnect-period'];
         this.manager = manager;
-        console.log(`${ip} ${port} ${password}`);
+        console.log(`ws://${this.ip}:${this.port}/${this.password}`);
         this.initRcon();
     }
 
