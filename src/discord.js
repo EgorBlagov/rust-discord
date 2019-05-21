@@ -47,11 +47,7 @@ class Discord {
             return;
         }
         console.log(`found channel: ${this.guild.name}: ${this.channel.name}`);
-        this.manager.onDiscordReady(
-            this.guild.name,
-            this.channel.name,
-            this.guild.roles.filter(x => x.name == 'Admin').first()
-        );
+        this.manager.onDiscordReady();
     }
 
     handleMessage(msg) {
@@ -90,7 +86,19 @@ class Discord {
 
     get guild() {
         return this.channel.guild
-    }    
+    }
+    
+    get connected() {
+        return this.client != undefined && this.channel != undefined;
+    }
+
+    get server() {
+        return this.guild.name;
+    }
+
+    get adminRole() {
+        return  this.guild.roles.filter(x => x.name == 'Admin').first();
+    }
 }
 
 module.exports.Discord = Discord;

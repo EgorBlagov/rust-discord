@@ -39,21 +39,42 @@ class Message {
 
 class Manager {
     constructor(options) {
-        this.rcon = new Rcon(options, this);
+        this.rcon = new Rcon(options);
+        this.rcon.on('connected', () => this.onServerConnected());
+        this.rcon.on('disconnected', () => this.onServerDisconnected());
+        this.rcon.on('message', (msg) => this.onServerMessage(msg));
         this.discord = new Discord(options, this);
     }
 
     onServerMessage(message) {
         this.discord.send(message);
     }
-
+    
     onDiscordMessage(username, content, roles) {
         const message = new Message(username, content, roles);
         this.rcon.run(`discordapi.message "${this.escape(message.toString())}"`);
     }
 
-    onDiscordReady(serverName, channelName, adminRole) {
-        const readyEvent = new ReadyEvent(serverName, channelName, adminRole);    
+    onServerConnected() {
+        this.notifyConnetion();
+    }
+
+    onServerInitRequest() {
+        this.notifyConnetion();
+    }
+
+    onDiscordReady() {
+        
+        this.notifyConnetion();
+    }
+
+    notifyConnetion() {
+        
+        if (!this.discord.connected || !this.rcon.connected) {
+            return;
+        }
+        const readyEvent = new ReadyEvent(this.discord.server, this.discord.channel.name, this.discord.adminRole);    
+        console.log(readyEvent.toString());
         this.rcon.run(`discordapi.ready "${this.escape(readyEvent.toString())}"`);
     }
 

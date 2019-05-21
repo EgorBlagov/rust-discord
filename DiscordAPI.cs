@@ -1,19 +1,24 @@
 using System.Linq;
 using Newtonsoft.Json;
 using Facepunch;
+using System;
 
 namespace Oxide.Plugins
 {
     [Info("DiscordAPI", "Blagov Egor", "1.0.0")]
-    [Description("Discord Client for Rust OxideMods")]
+    [Description("Discord integration plugin for rust-discord")]
     class DiscordAPI : RustPlugin
     {
         const string permRead = "discordapi.read";
         const string permDisable = "discordapi.disable";
         const string DiscordMagicPrefix = "discord.send";
+        const string DiscordInitMagicPrefix = "discord.init";
+
         private PluginConfig config;
         private bool loaded = false;
         private Role adminRole = null;
+        private bool discordConnected = false;
+
         class Role {
             public string color;
             public string name;
@@ -55,9 +60,6 @@ namespace Oxide.Plugins
             public Role adminRole;
         }
 
-        void Loaded() {
-        }
-
         private T parseArg<T>(ConsoleSystem.Arg arg) {
             return JsonConvert.DeserializeObject<T>(arg.Args[0]);
         }
@@ -67,11 +69,20 @@ namespace Oxide.Plugins
             ReadyEvent readyEvent = parseArg<ReadyEvent>(arg);
             NextTick(()=>Puts($"Connected to server: {readyEvent.server}, channel: {readyEvent.channel}"));
             adminRole = readyEvent.adminRole;
+            discordConnected = true;
             sendToDiscord(_(config.WelcomeMessage));
         }
 
         private void sendToDiscord(string message) {
-            NextTick(()=>Puts($"{DiscordMagicPrefix}{message}"));
+            if (!discordConnected) {
+                initDiscord();
+                return;
+            }
+            NextTick(() => Puts($"{DiscordMagicPrefix}{message}"));
+        }
+
+        private void initDiscord() {
+            NextTick(() => Puts($"{DiscordInitMagicPrefix}"));
         }
 
         [ConsoleCommand("discordapi.message")]
@@ -93,19 +104,19 @@ namespace Oxide.Plugins
             permission.RegisterPermission(permDisable, this);
             config = Config.ReadObject<PluginConfig>();
             Config.WriteObject(config);
+            this.initDiscord();
         }
 
-        private void OnServerInitialized() {
+        private void OnServerInitialized(bool reload) {
+            for (int i=0; i<100; i++) {
+                Puts($"it's reload: {reload}");
+            }
             loaded = true;
-            NextTick(() => {
-                sendToDiscord(_(config.StartMessage));
-            });
+            sendToDiscord(_(config.StartMessage));
         }
 
         private void Unload() {
-            NextTick(() => {
-                sendToDiscord(_(config.GoodbyeMessage));
-            });
+            sendToDiscord(_(config.GoodbyeMessage));
         }
 
         private string _(string input) {
@@ -141,6 +152,11 @@ namespace Oxide.Plugins
 
         protected override void LoadDefaultConfig() {
             Config.WriteObject(new PluginConfig(), true);
+        }
+
+        [ConsoleCommand("discordapi.ping")]
+        private void testcmd(ConsoleSystem.Arg arg) {
+            Puts("discordapi.pingtrue");
         }
 
         private class PluginConfig {
