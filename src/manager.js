@@ -13,18 +13,6 @@ class Role {
     }
 }
 
-class ReadyEvent {
-    constructor(serverName, channelName, adminRole) {
-        this.server = serverName;
-        this.channel = channelName;
-        this.adminRole = new Role(adminRole);
-    }
-
-    toString() {
-        return JSON.stringify(this);
-    }
-}
-
 class Message {
     constructor(username, content, roles) {
         this.username = username;
@@ -39,8 +27,10 @@ class Message {
 
 class Manager {
     constructor(options) {
-        this.rcon = new Rcon(options, this);
-        this.discord = new Discord(options, this);
+        this.rcon = new Rcon(options);
+        this.rcon.on('message', (msg) => this.onServerMessage(msg));
+        this.discord = new Discord(options);
+        this.discord.on('message', (username, content, roles) => this.onDiscordMessage(username, content, roles));
     }
 
     onServerMessage(message) {
@@ -50,11 +40,6 @@ class Manager {
     onDiscordMessage(username, content, roles) {
         const message = new Message(username, content, roles);
         this.rcon.run(`discordapi.message "${this.escape(message.toString())}"`);
-    }
-
-    onDiscordReady(serverName, channelName, adminRole) {
-        const readyEvent = new ReadyEvent(serverName, channelName, adminRole);    
-        this.rcon.run(`discordapi.ready "${this.escape(readyEvent.toString())}"`);
     }
 
     escape(input) {

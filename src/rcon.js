@@ -1,15 +1,16 @@
 const WebRcon = require('webrconjs');
+const EventEmitter = require('events');
 
 const magicDiscordPrefix = 'discord.send';
 const discordPrefix = `[DiscordAPI] ${magicDiscordPrefix}`;
 
-class Rcon {
-    constructor(options, manager) {
+class Rcon extends EventEmitter{
+    constructor(options) {
+        super()
         this.ip = options.ip;
         this.port = options.port;
         this.password = options.password;
         this.reconnectPeriod = options['reconnect-period'];
-        this.manager = manager;
         console.log(`ws://${this.ip}:${this.port}/${this.password}`);
         this.initRcon();
     }
@@ -36,7 +37,7 @@ class Rcon {
         }
         message = message.slice(discordPrefix.length);
         console.log(`RCON <- SERVER: ${message}`);
-        this.manager.onServerMessage(message);
+        this.emit('message', message);
     }
 
     reconnect() {

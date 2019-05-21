@@ -1,14 +1,15 @@
 const discordjs = require('discord.js');
+const EventEmitter = require('events');
 
-class Discord {
-    constructor(options, manager) {
+class Discord extends EventEmitter {
+    constructor(options) {
+        super();
         this.channel = null;
         this.botToken = options.token;
         this.channelName = options.channel;
         this.sendRetries = options['retry-count'];
         this.sendRetryPeriod = options['send-period'];
         this.reconnectPeriod  = options['reconnect-period'];
-        this.manager = manager;
         this.initClient();
     }
 
@@ -47,11 +48,6 @@ class Discord {
             return;
         }
         console.log(`found channel: ${this.guild.name}: ${this.channel.name}`);
-        this.manager.onDiscordReady(
-            this.guild.name,
-            this.channel.name,
-            this.guild.roles.filter(x => x.name == 'Admin').first()
-        );
     }
 
     handleMessage(msg) {
@@ -65,12 +61,21 @@ class Discord {
 
         console.log(`Discord <- ${msg.author.username}: ${msg.content}`);
         const roles = this.guild.members.filter(x => x.user === msg.author).first().roles.filter(x => x.name !== '@everyone');
-        this.manager.onDiscordMessage(msg.author.username, msg.content, roles);
+        this.emit('message', msg.author.username, msg.content, roles);
     }
 
     async send(message) {
         if (this.channel != undefined) {
             let retriesLeft = this.sendRetries;
+
+            this.guild.roles.tap((r) => {
+                message = message.replace(`@${r.name}`, `<@&${r.id}>`);
+            });
+
+            this.guild.members.tap((m) => {
+                message = message.replace(`@${m.user.username}`, `<@${m.user.id}>`);
+            })
+
             while(retriesLeft > 0) {
                 try {
                     retriesLeft--;
