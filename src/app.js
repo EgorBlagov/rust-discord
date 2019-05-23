@@ -45,7 +45,7 @@ let argDescriptions = [
         alias: 'r',
         name: 'reconnect-period',
         description: 'Delay between reconnects to RCON and Discord (ms)',
-        default: 15000
+        default: 3000
     },
     {
         alias: 'R',
