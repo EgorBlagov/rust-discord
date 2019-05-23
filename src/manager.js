@@ -29,8 +29,17 @@ class Manager {
     constructor(options) {
         this.rcon = new Rcon(options);
         this.rcon.on('message', (msg) => this.onServerMessage(msg));
+        this.rcon.on('terminate', () => process.exit(0));
+        this.rcon.on('connected', () => this.notifyConnected());
         this.discord = new Discord(options);
         this.discord.on('message', (username, content, roles) => this.onDiscordMessage(username, content, roles));
+        this.discord.on('connected', () => this.notifyConnected());
+    }
+
+    notifyConnected() {
+        if (this.rcon.connected && this.discord.connected) {
+            this.rcon.run(`discordapi.connected`);
+        }
     }
 
     onServerMessage(message) {

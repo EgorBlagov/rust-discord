@@ -1,8 +1,12 @@
 const WebRcon = require('webrconjs');
 const EventEmitter = require('events');
 
-const magicDiscordPrefix = 'discord.send';
-const discordPrefix = `[DiscordAPI] ${magicDiscordPrefix}`;
+const messageCommand  = 'discord.send';
+const terminateCommand = 'discord.terminate';
+
+function prefix(command) {
+    return `[DiscordAPI] ${command}`;
+}
 
 class Rcon extends EventEmitter{
     constructor(options) {
@@ -17,7 +21,10 @@ class Rcon extends EventEmitter{
 
     initRcon() {
         this.rcon = new WebRcon(this.ip, this.port);
-        this.rcon.on('connect', () => console.log('RCON connected'));
+        this.rcon.on('connect', () => {
+            console.log('RCON connected');
+            this.emit('connected');
+        });
         this.rcon.on('disconnect', () => {
             console.log('RCON disconnected');
             this.reconnect();
@@ -32,12 +39,13 @@ class Rcon extends EventEmitter{
         }
 
         let message = msg.message;
-        if (!message.startsWith(discordPrefix)) {
-            return;
+        if (message.startsWith(prefix(messageCommand))) {
+            message = message.slice(prefix(messageCommand).length);
+            console.log(`RCON <- SERVER: ${message}`);
+            this.emit('message', message);
+        } else if (message.startsWith(prefix(terminateCommand))) {
+            this.emit('terminate');
         }
-        message = message.slice(discordPrefix.length);
-        console.log(`RCON <- SERVER: ${message}`);
-        this.emit('message', message);
     }
 
     reconnect() {
@@ -57,6 +65,10 @@ class Rcon extends EventEmitter{
 
     connect() {
         this.rcon.connect(this.password);
+    }
+
+    get connected() {
+        return this.rcon != undefined && this.rcon.connected;
     }
 }
 

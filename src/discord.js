@@ -48,6 +48,7 @@ class Discord extends EventEmitter {
             return;
         }
         console.log(`found channel: ${this.guild.name}: ${this.channel.name}`);
+        this.emit('connected');
     }
 
     handleMessage(msg) {
@@ -95,7 +96,11 @@ class Discord extends EventEmitter {
 
     get guild() {
         return this.channel.guild
-    }    
+    } 
+    
+    get connected() {
+        return this.channel != undefined && this.client != undefined;
+    }
 }
 
 module.exports.Discord = Discord;
